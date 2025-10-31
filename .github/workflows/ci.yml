@@ -90,3 +90,17 @@ jobs:
           name: application-jar
           path: target/*.jar
           retention-days: 30
+
+      - name: Upload test results to Codebeamer
+        if: always()
+        run: |
+          chmod +x .github/scripts/upload-to-codebeamer.sh
+          .github/scripts/upload-to-codebeamer.sh \
+            "${{ secrets.CB_USERNAME }}" \
+            "${{ secrets.CB_PASSWORD }}" \
+            "${{ secrets.CB_TEST_CASE_TRACKER_ID }}" \
+            "${{ secrets.CB_TEST_RUN_TRACKER_ID }}"
+        env:
+          TEST_CONFIG_ID: ${{ secrets.CB_TEST_CONFIG_ID }}
+          RELEASE_ID: ${{ secrets.CB_RELEASE_ID }}
+          PACKAGE_PREFIX: "com.demo"
