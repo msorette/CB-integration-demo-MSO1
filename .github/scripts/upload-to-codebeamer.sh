@@ -56,6 +56,10 @@ if [ -f "${ZIP_FILE}" ]; then
     rm "${ZIP_FILE}"
 fi
 
+# List XML files to be zipped
+log "XML files found:"
+ls -lh surefire-reports/TEST-*.xml | tee -a ${LOG_FILENAME}
+
 # Zip all XML test result files
 zip -j "${ZIP_FILE}" surefire-reports/TEST-*.xml >> ${LOG_FILENAME} 2>&1
 
@@ -67,26 +71,55 @@ fi
 log "Zip file created: ${ZIP_FILE}"
 log "Zip file size: $(ls -lh ${ZIP_FILE} | awk '{print $5}')"
 
+# Display contents of the zip file
+log "Zip file contents:"
+unzip -l "${ZIP_FILE}" | tee -a ${LOG_FILENAME}
+
+# Extract and display one XML file content for verification
+log ""
+log "=== Sample XML content (first 100 lines) ==="
+unzip -p "${ZIP_FILE}" | head -100 | tee -a ${LOG_FILENAME}
+log "=== End of sample XML ==="
+log ""
+
 # Build configuration JSON
 CFG="{\"testConfigurationId\":\"$TEST_CONFIG_ID\",\"testCaseTrackerId\":\"$TEST_CASE_TRACKER_ID\",\"testCaseId\":\"$PARENT_TEST_CASE_ID\",\"releaseId\":\"$RELEASE_ID\",\"testRunTrackerId\":\"$TEST_RUN_TRACKER_ID\",\"buildIdentifier\":\"$BUILD_ID\",\"defaultPackagePrefix\":\"$PACKAGE_PREFIX\"}"
 
-log "Configuration: ${CFG}"
+log "=== Request Details ==="
+log "Endpoint URL: ${URL}"
+log "HTTP Method: POST"
+log "Authentication: Basic Auth (username: ${USER})"
+log "Configuration JSON: ${CFG}"
+log ""
+log "Formatted Configuration:"
+echo "${CFG}" | python3 -m json.tool 2>/dev/null || echo "${CFG}" | tee -a ${LOG_FILENAME}
+log ""
+log "File being uploaded: ${ZIP_FILE}"
+log "=== End Request Details ==="
+log ""
 
-# Upload to Codebeamer
+# Upload to Codebeamer with verbose output
 log "Uploading test results to Codebeamer..."
 HTTP_CODE=$(curl -w "%{http_code}" -o "${LOG_FILENAME}.response" \
+    --verbose \
     --location --request POST "${URL}" \
     -u "${USER}:${PASS}" \
     --form "configuration=${CFG}" \
-    --form "file=@${ZIP_FILE}")
+    --form "file=@${ZIP_FILE}" \
+    2>&1 | tee -a ${LOG_FILENAME} | tail -1)
 
+log ""
+log "=== Response Details ==="
 log "HTTP Response Code: ${HTTP_CODE}"
+log ""
 
 if [ -f "${LOG_FILENAME}.response" ]; then
     log "Response body:"
     cat "${LOG_FILENAME}.response" | tee -a ${LOG_FILENAME}
     echo "" >> ${LOG_FILENAME}
 fi
+log "=== End Response Details ==="
+log ""
 
 # Check if upload was successful
 if [ "${HTTP_CODE}" -ge 200 ] && [ "${HTTP_CODE}" -lt 300 ]; then
