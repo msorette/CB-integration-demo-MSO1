@@ -103,7 +103,7 @@ jobs:
         env:
           TEST_CONFIG_ID: ${{ secrets.CB_TEST_CONFIG_ID }}
           RELEASE_ID: ${{ secrets.CB_RELEASE_ID }}
-          PACKAGE_PREFIX: "com.demo"
+          PACKAGE_PREFIX: ""
 
       - name: Upload Codebeamer integration artifacts (for debugging)
         if: always()
