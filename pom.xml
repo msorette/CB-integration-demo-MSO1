@@ -55,6 +55,14 @@
                         <include>**/*Test.java</include>
                     </includes>
                     <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+                    <!-- Include detailed error messages and stack traces in XML reports -->
+                    <trimStackTrace>false</trimStackTrace>
+                    <printSummary>true</printSummary>
+                    <reportFormat>xml</reportFormat>
+                    <!-- Ensure full stack traces and failure messages are captured -->
+                    <systemPropertyVariables>
+                        <java.awt.headless>true</java.awt.headless>
+                    </systemPropertyVariables>
                 </configuration>
             </plugin>
 

@@ -12,7 +12,7 @@ public class Calculator {
      * @return Le message "Hello world"
      */
     public String sayHello() {
-        return "Hello world";
+        return "Hello - world";
     }
 
     /**
@@ -23,7 +23,7 @@ public class Calculator {
      * @return La somme de a et b
      */
     public int add(int a, int b) {
-        return a + b + 1;
+        return a + b;
     }
 
     /**
